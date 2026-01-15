@@ -22,7 +22,7 @@ class TaskController:
                     TaskModel.created_at,
                     TagModel.name.label("tag_name"),
                 )
-                .where(user_id == user_id)
+                .where(TaskModel.user_id == user_id)
                 .join(TagModel, TaskModel.tag_id == TagModel.id)
                 .all()
             )
@@ -49,9 +49,14 @@ class TaskController:
     @staticmethod
     def update(data, task_id):
         try:
+            user_id = get_jwt_identity()
             task = db.session.execute(
                 select(TaskModel).where(TaskModel.id == task_id)
             ).scalar_one()
+
+            # Verify task ownership
+            if task.user_id != user_id:
+                abort(403, message="You don't have permission to update this task")
 
             task.title = data["title"]
             task.content = data["content"]
@@ -68,9 +73,14 @@ class TaskController:
     @staticmethod
     def delete(task_id):
         try:
+            user_id = get_jwt_identity()
             task = db.session.execute(
                 select(TaskModel).where(TaskModel.id == task_id)
             ).scalar_one()
+
+            # Verify task ownership
+            if task.user_id != user_id:
+                abort(403, message="You don't have permission to delete this task")
 
             db.session.delete(task)
             db.session.commit()

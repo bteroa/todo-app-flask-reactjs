@@ -24,4 +24,6 @@ class DevelopmentConfig(Config):
 
 
 class TestConfig(Config):
-    pass
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    TESTING = True
+    JWT_SECRET_KEY = "test-secret-key"
